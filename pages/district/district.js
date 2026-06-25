@@ -10,6 +10,11 @@ const LOADERS = {
   ueno:         () => require('../../data/ueno.js'),
 }
 
+// 缓存「免校验」窗口（毫秒）：此窗口内重复打开同一区直接秒开，连版本清单都不查，
+// 省掉快速来回切换时的网络往返。超过这个窗口会去比对云端版本清单(manifest)决定是否重下。
+// 设为 0 则每次打开都校验版本（rerun 覆盖能最快被发现）。按需调整。
+const CACHE_FRESH_WINDOW_MS = 5 * 60 * 1000 // 5 分钟
+
 function ratingColor(score) {
   if (!score) return '#555'
   if (score >= 8.0) return '#4ade80'
@@ -127,41 +132,83 @@ Page({
     this.setData({ districtId: id, districtName })
     wx.setNavigationBarTitle({ title: districtName })
 
-    // 1) 有本地缓存先秒开，避免白屏；后台静默拉云端刷新（不显示进度条）
     const cacheKey = `district:${id}`
+    const tsKey = `district:${id}:ts`
+    const verKey = `district:${id}:ver`
     const cached = wx.getStorageSync(cacheKey)
-    if (cached && cached.theaters) {
+    const cachedTs = wx.getStorageSync(tsKey)
+    const cachedVer = wx.getStorageSync(verKey)
+
+    // 1) 免校验窗口内的缓存 → 秒开，连版本都不查
+    if (cached && cached.theaters && cachedTs && Date.now() - cachedTs < CACHE_FRESH_WINDOW_MS) {
       this.renderDistrict(cached)
-      this.loadFromCloud(id)
-        .then(district => {
-          wx.setStorageSync(cacheKey, district)
-          this.renderDistrict(district)
-        })
-        .catch(() => {})
       return
     }
 
-    // 2) 无缓存：显示百分比进度条。下载 json 占满整条 0~100%，渲染完成即隐藏（不额外等待）
-    this.setData({ loading: true, progress: 0 })
-    this.loadFromCloud(id, p => {
-      // 下载进度 0~100 直接映射进度条 0~100
-      this.setData({ progress: Math.round(p) })
-    })
-      .then(district => {
-        wx.setStorageSync(cacheKey, district)
-        this.renderWithProgress(district)
+    // 下整包并渲染（带进度条）；serverVer 为云端最新版本号，成功后随缓存一起记下。
+    const downloadFresh = serverVer => {
+      this.setData({ loading: true, progress: 0 })
+      return this.loadFromCloud(id, p => {
+        // 下载进度 0~100 直接映射进度条 0~100
+        this.setData({ progress: Math.round(p) })
       })
-      .catch(() => {
-        // 3) 云端失败：回退包内本地数据（无下载进度，直接填满再渲染）
-        let local = null
-        try { local = LOADERS[id]() } catch (e) {}
-        if (local) {
-          this.setData({ progress: 100 })
-          this.renderWithProgress(local)
-        } else {
-          this.setData({ loading: false, errMsg: '数据加载失败' })
+        .then(district => {
+          wx.setStorageSync(cacheKey, district)
+          wx.setStorageSync(tsKey, Date.now())
+          if (serverVer) wx.setStorageSync(verKey, serverVer)
+          this.renderWithProgress(district)
+        })
+        .catch(() => {
+          // 云端失败：优先用旧缓存，否则包内本地兜底（直接填满再渲染）
+          let fallback = (cached && cached.theaters) ? cached : null
+          if (!fallback) {
+            try { fallback = LOADERS[id]() } catch (e) {}
+          }
+          if (fallback) {
+            this.setData({ progress: 100 })
+            this.renderWithProgress(fallback)
+          } else {
+            this.setData({ loading: false, errMsg: '数据加载失败' })
+          }
+        })
+    }
+
+    // 2) 超过窗口：先秒下版本清单(manifest)比对（不显示进度条）
+    this.fetchManifest()
+      .then(manifest => {
+        const serverVer = manifest && manifest[id]
+        // 版本一致（含 rerun 出相同内容）→ 直接用缓存秒开，刷新时间戳，全程无进度条
+        if (cached && cached.theaters && serverVer && serverVer === cachedVer) {
+          wx.setStorageSync(tsKey, Date.now())
+          this.renderDistrict(cached)
+          return
         }
+        // 版本变了 / 无缓存 / 清单里没有该区 → 进度条下载整包
+        return downloadFresh(serverVer || '')
       })
+      .catch(() => downloadFresh(''))  // 清单都拿不到 → 直接下整包兜底
+  },
+
+  // 秒下版本清单 manifest.json（{区id: 内容哈希}）。云未配置/失败 → reject。
+  fetchManifest() {
+    const prefix = getApp().globalData.cloudDataPrefix
+    if (!wx.cloud || !prefix || prefix.indexOf('REPLACE_WITH') !== -1) {
+      return Promise.reject(new Error('云开发未配置'))
+    }
+    return new Promise((resolve, reject) => {
+      wx.cloud.downloadFile({
+        fileID: prefix + 'manifest.json',
+        success: res => {
+          try {
+            const text = wx.getFileSystemManager().readFileSync(res.tempFilePath, 'utf-8')
+            resolve(JSON.parse(text))
+          } catch (e) {
+            reject(e)
+          }
+        },
+        fail: reject,
+      })
+    })
   },
 
   // 从云存储下载该地区 json 并解析；传 onProgress 可拿下载进度（0~100）。
