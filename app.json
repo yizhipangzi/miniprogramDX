@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/district/district",
+    "pages/theater/theater"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "东京电影院",
+    "navigationBarBackgroundColor": "#0d0d1a"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

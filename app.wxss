@@ -1,0 +1,34 @@
+page {
+  background-color: #0d0d1a;
+  color: #f0f0f0;
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+.page-container {
+  min-height: 100vh;
+  background-color: #0d0d1a;
+}
+
+/* 场次格式标签：字幕/吹替/IMAX 等。颜色取自 eiga.com theater.css 的 .movie-type，
+   两个单色款(subtitled/dubbed)为暗色主题下可见性做了最小调整(见注释)。 */
+.type-tag {
+  display: inline-block;
+  font-size: 18rpx;
+  line-height: 1.5;
+  padding: 0 6rpx;
+  margin-left: 6rpx;
+  border-radius: 4rpx;
+  color: #fff;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+/* eiga: 黑底白字黑边。暗色背景下黑边不可见，改用浅灰边保证 chip 轮廓。 */
+.type-tag.type-subtitled   { background: #000;         border: 1rpx solid #555; }
+/* eiga: 透明底黑字黑边。暗色背景下全黑不可见，反转为白字白边。 */
+.type-tag.type-dubbed      { background: transparent;  border: 1rpx solid #fff; color: #fff; }
+.type-tag.type-3d          { background: #014584;      border: 1rpx solid #014584; }
+.type-tag.type-screenx     { background: #e3511e;      border: 1rpx solid #e3511e; }
+.type-tag.type-dolbyatmos  { background: #0c919d;      border: 1rpx solid #0c919d; }
+.type-tag.type-dolbycinema { background: #015860;      border: 1rpx solid #015860; }
+.type-tag.type-imax        { background: #009ad8;      border: 1rpx solid #009ad8; }
+.type-tag.type-mx4d        { background: #00294f;      border: 1rpx solid #00294f; }

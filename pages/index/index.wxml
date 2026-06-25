@@ -1,0 +1,31 @@
+<!--map page-->
+<!-- 开屏封面：显示 1.5s 后淡出 -->
+<view wx:if="{{showSplash}}" class="splash {{splashFade ? 'splash-hide' : ''}}">
+  <image class="splash-img" src="/images/cover.png" mode="aspectFill"/>
+</view>
+
+<scroll-view scroll-y class="scroll">
+  <view class="map-wrap" style="height:{{mapHeight}}px">
+    <image
+      class="map-img"
+      src="/images/tokyo_map.png"
+      mode="widthFix"
+      bindload="onImgLoad"
+    />
+    <view
+      wx:for="{{spots}}"
+      wx:key="id"
+      class="spot"
+      style="{{item.style}}"
+      data-id="{{item.id}}"
+      data-name="{{item.name}}"
+      bindtap="onSpotTap"
+    >
+      <view class="spot-ripple" wx:if="{{item.id === activeSpot}}"/>
+    </view>
+  </view>
+
+  <view class="tip" wx:if="{{mapHeight === 0}}">
+    <text class="tip-text">地图加载中…</text>
+  </view>
+</scroll-view>

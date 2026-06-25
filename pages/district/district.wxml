@@ -1,0 +1,195 @@
+<!-- 详情浮层打开时锁住页面主体滚动，避免在浮层上滑动穿透到背后页面 -->
+<page-meta page-style="{{showDetail ? 'overflow: hidden;' : ''}}" />
+
+<!-- 加载进度条：下载 json(0~50%) + 渲染(50~100%)，加载完成自动隐藏 -->
+<view wx:if="{{loading}}" class="loading-mask">
+  <view class="loading-box">
+    <text class="loading-text">加载中 {{progress}}%</text>
+    <view class="loading-track">
+      <view class="loading-fill" style="width:{{progress}}%"></view>
+    </view>
+  </view>
+</view>
+
+<!-- 错误提示（只在出错时可见）-->
+<view wx:if="{{errMsg}}" class="err-banner">
+  <text class="err-text">{{errMsg}}</text>
+</view>
+
+<!-- Header -->
+<view class="header" wx:if="{{!errMsg}}">
+  <view class="header-left">
+    <text class="district-name">{{districtName}}</text>
+    <text class="subtitle" wx:if="{{viewMode === 'theater'}}">{{theaters.length}} 家电影院</text>
+    <text class="subtitle" wx:else>{{movies.length}} 部电影上映中</text>
+  </view>
+
+  <!-- 模式切换：胶片=电影索引（左），建筑=电影院索引（右）-->
+  <view class="mode-switch">
+    <view
+      class="mode-btn {{viewMode === 'movie' ? 'mode-active' : ''}}"
+      data-mode="movie"
+      bindtap="switchMode"
+    >🎞️</view>
+    <view
+      class="mode-btn {{viewMode === 'theater' ? 'mode-active' : ''}}"
+      data-mode="theater"
+      bindtap="switchMode"
+    >🏢</view>
+  </view>
+</view>
+
+<!-- 电影院索引模式 -->
+<view class="list" wx:if="{{!errMsg && viewMode === 'theater'}}">
+  <view
+    wx:for="{{theaters}}"
+    wx:key="id"
+    class="theater-card"
+    data-id="{{item.id}}"
+    data-name="{{item.name}}"
+    data-district="{{districtId}}"
+    bindtap="onTheaterTap"
+  >
+    <view class="theater-icon">🏢</view>
+    <view class="theater-info">
+      <text class="theater-name">{{item.name}}</text>
+      <text class="theater-meta">{{item.movies.length}} 部上映中</text>
+    </view>
+    <view class="theater-arrow">›</view>
+  </view>
+
+  <view class="empty" wx:if="{{theaters.length === 0}}">
+    <text class="empty-text">该地区暂无电影院数据</text>
+  </view>
+</view>
+
+<!-- 电影索引模式 -->
+<view class="list" wx:if="{{!errMsg && viewMode === 'movie'}}">
+  <view
+    wx:for="{{movies}}"
+    wx:key="id"
+    class="movie-card"
+    data-index="{{index}}"
+    bindtap="onMovieTap"
+  >
+    <view class="movie-head">
+      <!-- 评分块：点击弹出电影详情 -->
+      <view
+        class="score-block"
+        style="background:{{item.ratingColor}}"
+        data-index="{{index}}"
+        catchtap="onScoreTap"
+      >
+        <text class="score-type">{{item.scoreLabel}}</text>
+        <text class="score-val">{{item.scoreDisplay}}</text>
+        <text class="score-link">›</text>
+      </view>
+
+      <!-- 电影信息 -->
+      <view class="movie-body">
+        <text class="title-jp">{{item.titleJp}}</text>
+        <text class="title-cn" wx:if="{{item.titleCn}}">{{item.titleCn}}</text>
+        <view class="tags" wx:if="{{item.genres.length}}">
+          <text wx:for="{{item.genres}}" wx:for-item="g" wx:key="*this" class="tag">{{g}}</text>
+        </view>
+        <text class="movie-meta">{{item.theaterCount}} 家影院 · {{item.showCount}} 场</text>
+      </view>
+
+      <view class="movie-arrow">{{item.expanded ? '⌄' : '›'}}</view>
+    </view>
+
+    <!-- 展开：场次按时间排序，点击复制 eiga 场次链接 -->
+    <view class="screenings" wx:if="{{item.expanded}}">
+      <view
+        class="screening-row"
+        wx:for="{{item.screenings}}"
+        wx:for-item="s"
+        wx:key="index"
+        data-url="{{s.eigaUrl}}"
+        catchtap="onScreeningTap"
+      >
+        <text class="sc-time">{{s.time}}</text>
+        <view class="sc-tags">
+          <text
+            wx:for="{{s.movieType}}"
+            wx:for-item="m"
+            wx:key="type"
+            class="type-tag {{m.type}}"
+          >{{m.typeTxt}}</text>
+        </view>
+        <text class="sc-theater">{{s.theaterName}}</text>
+        <text class="sc-link">↗</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{movies.length === 0}}">
+    <text class="empty-text">该地区暂无电影数据</text>
+  </view>
+</view>
+
+<!-- 电影详情浮层 -->
+<!-- catchtouchmove 拦截浮层上的滑动，阻止穿透到背后页面主体（短评长内容在
+     detail-scroll 内部滚动，scroll-view 原生滚动不受 catch 影响）。 -->
+<view class="detail-mask {{showDetail ? 'mask-show' : ''}}" catchtap="closeDetail" catchtouchmove="noop">
+  <view class="detail-card" catchtap="noop" wx:if="{{detailMovie}}">
+    <view class="detail-close" catchtap="closeDetail">✕</view>
+
+    <scroll-view scroll-y class="detail-scroll">
+     <view class="detail-inner">
+      <!-- 封面 + 标题 -->
+      <view class="detail-top">
+        <image
+          wx:if="{{detailMovie.poster}}"
+          class="detail-poster"
+          src="{{detailMovie.poster}}"
+          mode="aspectFill"
+          binderror="onPosterError"
+        />
+        <view wx:else class="detail-poster poster-placeholder">
+          <text class="poster-ph-text">🎬</text>
+        </view>
+
+        <view class="detail-headinfo">
+          <text class="detail-title-jp">{{detailMovie.titleJp}}</text>
+          <text class="detail-title-cn" wx:if="{{detailMovie.titleCn}}">{{detailMovie.titleCn}}</text>
+          <text class="detail-yearcountry" wx:if="{{detailMovie.year || detailMovie.country}}">{{detailMovie.year}}{{detailMovie.year && detailMovie.country ? ' · ' : ''}}{{detailMovie.country}}</text>
+        </view>
+      </view>
+
+      <!-- 分数 / 看过 / 想看 -->
+      <view class="detail-scoreline">
+        <text class="ds-star" style="color:{{detailMovie.ratingColor}}">⭐ {{detailMovie.scoreDisplay}}</text>
+        <text class="ds-source">{{detailMovie.scoreLabel}}</text>
+        <block wx:if="{{detailMovie.hasDouban && (detailMovie.watched || detailMovie.wish)}}">
+          <text class="ds-sep">/</text>
+          <text class="ds-meta" wx:if="{{detailMovie.watched}}">{{detailMovie.watched}} 看过</text>
+          <text class="ds-meta" wx:if="{{detailMovie.wish}}">{{detailMovie.wish}} 想看</text>
+        </block>
+      </view>
+
+      <!-- 信息行 -->
+      <view class="detail-row" wx:if="{{detailMovie.director}}">
+        <text class="dr-label">👤 导演</text>
+        <text class="dr-value">{{detailMovie.director}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{detailMovie.cast}}">
+        <text class="dr-label">🎭 主演</text>
+        <text class="dr-value">{{detailMovie.cast}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{detailMovie.genreText}}">
+        <text class="dr-label">🏷️ 类型</text>
+        <text class="dr-value">{{detailMovie.genreText}}</text>
+      </view>
+
+      <!-- 短评 -->
+      <view class="detail-comment" wx:if="{{detailMovie.comments.length}}">
+        <text class="dc-label">📰 某瓣短评</text>
+        <view class="dc-item" wx:for="{{detailMovie.comments}}" wx:key="index">
+          <text class="dc-text">{{item}}</text>
+        </view>
+      </view>
+     </view>
+    </scroll-view>
+  </view>
+</view>

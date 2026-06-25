@@ -1,0 +1,78 @@
+<!--theater.wxml: movie list for a theater-->
+<view wx:if="{{errMsg}}" class="err-banner">
+  <text class="err-text">{{errMsg}}</text>
+</view>
+<!-- Header -->
+<view class="header" wx:if="{{!errMsg}}">
+  <text class="theater-name">{{theaterName}}</text>
+  <text class="subtitle">{{movies.length}} 部上映中 · 按评分排序</text>
+</view>
+
+<!-- Movie list -->
+<view class="list" wx:if="{{!errMsg}}">
+  <view
+    wx:for="{{movies}}"
+    wx:key="id"
+    class="movie-card"
+    style="border-left-color:{{item.ratingColor}}"
+  >
+    <!-- Score badge -->
+    <view class="score-block" style="background:{{item.ratingColor}}">
+      <text class="score-type">{{item.scoreLabel}}</text>
+      <text class="score-val">{{item.scoreDisplay}}</text>
+    </view>
+
+    <!-- Movie info -->
+    <view class="movie-body">
+      <text class="title-jp">{{item.titleJp}}</text>
+      <text class="title-cn" wx:if="{{item.titleCn}}">{{item.titleCn}}</text>
+
+      <!-- Genre tags -->
+      <view class="tags" wx:if="{{item.genres.length}}">
+        <text
+          wx:for="{{item.genres}}"
+          wx:for-item="g"
+          wx:key="*this"
+          class="tag"
+        >{{g}}</text>
+      </view>
+
+      <!-- Meta row -->
+      <view class="meta">
+        <text wx:if="{{item.duration}}">{{item.durationText}}  </text>
+        <text wx:if="{{item.year}}">{{item.year}}年  </text>
+        <text wx:if="{{item.country}}">{{item.country}}</text>
+      </view>
+
+      <text class="director" wx:if="{{item.director}}">导演：{{item.director}}</text>
+
+      <!-- Showtimes：时间后跟格式标签(字幕/IMAX 等)。可在线购票的场次点击复制该片在
+           本影院的 eiga.com 场次链接；无在线购票的场次(onlineTicket=false)不可点击 -->
+      <view class="showtimes">
+        <view
+          wx:for="{{item.showtimes}}"
+          wx:for-item="t"
+          wx:key="time"
+          class="showtime-chip {{t.onlineTicket ? '' : 'no-online'}}"
+          data-url="{{item.eigaUrl}}"
+          data-online="{{t.onlineTicket}}"
+          catchtap="onShowtimeTap"
+        >
+          <text class="st-time">{{t.time}}</text>
+          <text
+            wx:for="{{t.movieType}}"
+            wx:for-item="m"
+            wx:key="type"
+            class="type-tag {{m.type}}"
+          >{{m.typeTxt}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{movies.length === 0}}">
+    <text class="empty-text">暂无上映电影数据</text>
+  </view>
+
+  <view class="footer-pad"/>
+</view>

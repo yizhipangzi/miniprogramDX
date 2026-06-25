@@ -1,0 +1,37 @@
+// app.js
+
+// ===== 云开发配置（按你的环境填写）=====
+// 1) 云环境 ID：云开发控制台右上角「环境名(环境ID)」里的 ID
+const CLOUD_ENV = ''
+// 2) 数据文件 File ID 前缀：在云存储里任选一个区的 json，复制它的「File ID」，
+//    去掉末尾的「shibuya.json」（保留到目录斜杠），把剩下的粘到这里。
+//    形如 cloud://prod-xxxx.7072-prod-xxxx-130xxxx/data/
+const CLOUD_DATA_PREFIX = ''
+
+App({
+  onLaunch() {
+    // 展示本地存储能力
+    const logs = wx.getStorageSync('logs') || []
+    logs.unshift(Date.now())
+    wx.setStorageSync('logs', logs)
+
+    // 初始化云开发（需基础库 >= 2.2.3）
+    if (wx.cloud) {
+      wx.cloud.init({ env: CLOUD_ENV, traceUser: true })
+    } else {
+      console.error('当前基础库不支持云能力，请升级到 2.2.3 以上')
+    }
+
+    // 登录
+    wx.login({
+      success: res => {
+        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+      }
+    })
+  },
+  globalData: {
+    userInfo: null,
+    cloudEnv: CLOUD_ENV,
+    cloudDataPrefix: CLOUD_DATA_PREFIX,
+  }
+})
