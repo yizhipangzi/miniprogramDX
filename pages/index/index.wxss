@@ -28,13 +28,12 @@ page {
   height: 100vh;
 }
 
+/* 宽高由 JS 按「高度贴合屏幕」算好后以内联 style 下发（横向溢出，可左右拖动） */
 .map-wrap {
   position: relative;
-  width: 100%;
 }
 
 .map-img {
-  width: 100%;
   display: block;
 }
 

@@ -4,13 +4,14 @@
   <image class="splash-img" src="/images/cover.png" mode="aspectFill"/>
 </view>
 
-<scroll-view scroll-y class="scroll">
-  <view class="map-wrap" style="height:{{mapHeight}}px">
+<!-- 地图高度贴合屏幕、宽度溢出：scroll-x + scroll-y 支持上下左右拖动，热区点击不受影响 -->
+<scroll-view scroll-x scroll-y class="scroll">
+  <view class="map-wrap" style="width:{{mapWidth}}px;height:{{mapHeight}}px">
     <image
       class="map-img"
       src="/images/tokyo_map.png"
-      mode="widthFix"
-      bindload="onImgLoad"
+      mode="scaleToFill"
+      style="width:{{mapWidth}}px;height:{{mapHeight}}px"
     />
     <view
       wx:for="{{spots}}"

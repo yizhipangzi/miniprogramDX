@@ -1,13 +1,16 @@
 const LOADERS = {
-  shibuya:      () => require('../../data/shibuya.js'),
-  shinjuku:     () => require('../../data/shinjuku.js'),
-  takadanobaba: () => require('../../data/takadanobaba.js'),
-  ikebukuro:    () => require('../../data/ikebukuro.js'),
-  yurakucho:    () => require('../../data/yurakucho.js'),
-  roppongi:     () => require('../../data/roppongi.js'),
-  ebisu:        () => require('../../data/ebisu.js'),
-  suidobashi:   () => require('../../data/suidobashi.js'),
-  ueno:         () => require('../../data/ueno.js'),
+  toshin:           () => require('../../data/toshin.js'),
+  shinjuku_shibuya: () => require('../../data/shinjuku_shibuya.js'),
+  ikebukuro_kita:   () => require('../../data/ikebukuro_kita.js'),
+  suidobashi:       () => require('../../data/suidobashi.js'),
+  joto:             () => require('../../data/joto.js'),
+  jonan:            () => require('../../data/jonan.js'),
+  nishitokyo:       () => require('../../data/nishitokyo.js'),
+  saitama:          () => require('../../data/saitama.js'),
+  chiba:            () => require('../../data/chiba.js'),
+  kawasaki:         () => require('../../data/kawasaki.js'),
+  yokohama:         () => require('../../data/yokohama.js'),
+  kennishi_shonan:  () => require('../../data/kennishi_shonan.js'),
 }
 
 function ratingColor(score) {

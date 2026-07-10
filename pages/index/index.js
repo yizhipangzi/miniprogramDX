@@ -1,19 +1,23 @@
-// Hotspot definitions in original image pixels (base map: 853 x 1844).
+// Hotspot definitions in original image pixels (base map: 1536 x 1024).
 // id must match the data file / district id so navigation can load it.
 const SPOTS = [
-  { id: 'takadanobaba', name: '高田馬場',           x: 20,  y: 150,  width: 320, height: 260 },
-  { id: 'ikebukuro',    name: '池袋',               x: 330, y: 110,  width: 450, height: 320 },
-  { id: 'shinjuku',     name: '新宿',               x: 40,  y: 470,  width: 370, height: 320 },
-  { id: 'ueno',         name: '上野',               x: 420, y: 410,  width: 380, height: 260 },
-  { id: 'suidobashi',   name: '水道橋・飯田橋',       x: 380, y: 650,  width: 420, height: 320 },
-  { id: 'shibuya',      name: '渋谷',               x: 20,  y: 900,  width: 400, height: 380 },
-  { id: 'yurakucho',    name: '有楽町・銀座・日本橋',  x: 430, y: 980,  width: 390, height: 380 },
-  { id: 'roppongi',     name: '六本木',             x: 240, y: 1270, width: 420, height: 320 },
-  { id: 'ebisu',        name: '恵比寿・目黒',         x: 180, y: 1590, width: 500, height: 220 },
+  { id: 'saitama',         name: '埼玉県',      left: 470,  top: 20,  width: 615, height: 200 },
+  { id: 'nishitokyo',      name: '西東京',       left: 20,   top: 200, width: 370, height: 615 },
+  { id: 'ikebukuro_kita',  name: '池袋・北',     left: 395,  top: 235, width: 295, height: 220 },
+  { id: 'suidobashi',      name: '水道橋・飯田橋', left: 625,  top: 255, width: 240, height: 215 },
+  { id: 'joto',            name: '城東',         left: 845,  top: 235, width: 300, height: 220 },
+  { id: 'shinjuku_shibuya',name: '新宿・渋谷',    left: 430,  top: 450, width: 305, height: 215 },
+  { id: 'toshin',          name: '都心',         left: 770,  top: 440, width: 350, height: 225 },
+  { id: 'jonan',           name: '城南',         left: 470,  top: 650, width: 625, height: 170 },
+  { id: 'chiba',           name: '千葉県',       left: 1160, top: 90,  width: 355, height: 775 },
+  { id: 'kennishi_shonan', name: '県西・湘南',    left: 215,  top: 805, width: 465, height: 205 },
+  { id: 'kawasaki',        name: '川崎',         left: 685,  top: 770, width: 435, height: 105 },
+  { id: 'yokohama',        name: '横浜',         left: 685,  top: 875, width: 435, height: 140 },
 ]
 
 Page({
   data: {
+    mapWidth: 0,
     mapHeight: 0,
     spots: [],
     activeSpot: '',
@@ -27,27 +31,38 @@ Page({
       this.setData({ splashFade: true })
       setTimeout(() => this.setData({ showSplash: false }), 400)
     }, 1500)
+
+    this.initMap()
   },
 
-  onImgLoad(e) {
-    const { width, height } = e.detail
-    const sys = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
-    const screenW = sys.windowWidth
-    const scale = screenW / width // displayed-image scale vs. original pixels
-    const mapH = height * scale
+  // 地图按「垂直方向适应屏幕」铺开：图高 = 屏幕可视高度，宽度按原图比例等比放大。
+  // 横向图会溢出屏幕宽度，交给 scroll-view 左右拖动查看；热区用同一 scale 换算，点击照常。
+  initMap() {
+    wx.getImageInfo({
+      src: '/images/tokyo_map.png',
+      success: res => {
+        const sys = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+        const screenH = sys.windowHeight
+        const scale = screenH / res.height // 以高度为基准的缩放比
+        const mapW = res.width * scale
 
-    const spots = SPOTS.map(s => ({
-      id: s.id,
-      name: s.name,
-      style: [
-        `top:${s.y * scale}px`,
-        `left:${s.x * scale}px`,
-        `width:${s.width * scale}px`,
-        `height:${s.height * scale}px`,
-      ].join(';'),
-    }))
+        const spots = SPOTS.map(s => ({
+          id: s.id,
+          name: s.name,
+          style: [
+            `top:${s.top * scale}px`,
+            `left:${s.left * scale}px`,
+            `width:${s.width * scale}px`,
+            `height:${s.height * scale}px`,
+          ].join(';'),
+        }))
 
-    this.setData({ mapHeight: mapH, spots })
+        this.setData({ mapWidth: mapW, mapHeight: screenH, spots })
+      },
+      fail: () => {
+        wx.showToast({ title: '地图加载失败', icon: 'none', duration: 3000 })
+      },
+    })
   },
 
   onSpotTap(e) {

@@ -7,11 +7,12 @@
 ## 一、页面与功能式样
 
 ### 1. 首页 `pages/index`（地图选区）
-- 展示东京地图底图 `images/tokyo_map.png`（原图 853 × 1844）。
-- 图上叠加 9 个**透明热区按钮**，坐标按原图像素定义、随屏幕等比缩放（见 `index.js` 的 `SPOTS`）。
+- 展示首都圏地图底图 `images/tokyo_map.png`（原图 1536 × 1024，覆盖东京+埼玉+千叶+神奈川）。
+- 图上叠加 12 个**透明热区按钮**，坐标按原图像素定义、随屏幕等比缩放（见 `index.js` 的 `SPOTS`）。
 - 点击热区 → 红色高亮动效 → 跳转到对应区域页 `pages/district`。
-- 9 个区域 id：`takadanobaba / ikebukuro / shinjuku / ueno / suidobashi / shibuya / yurakucho / roppongi / ebisu`
-  - ⚠️ 注意：地图标注里的 `iidabashi`、`ginza` 对应数据/导航 id 为 `suidobashi`、`yurakucho`（保持与数据文件名一致，否则无法加载）。
+- 12 个区域 id（东京7个 + 埼玉/千叶各1个 + 神奈川3个）：
+  `toshin`(都心) / `shinjuku_shibuya`(新宿・渋谷) / `ikebukuro_kita`(池袋・北) / `suidobashi`(水道橋・飯田橋) / `joto`(城東) / `jonan`(城南) / `nishitokyo`(西東京) / `saitama`(埼玉県) / `chiba`(千葉県) / `kawasaki`(川崎) / `yokohama`(横浜) / `kennishi_shonan`(県西・湘南)
+  - id 必须与 `data/{id}.js` 文件名、云存储 `{id}.json`、`pipeline/step4_export.py` 的 `DISTRICTS` 保持一致。
 
 ### 2. 区域页 `pages/district`（双视图）
 右上角图标切换两种索引模式：
@@ -52,7 +53,7 @@
 
 ## 二、数据结构（现状）
 
-数据按区域拆分为 9 个文件：`data/{区域id}.js`，每个 `module.exports = { id, name, theaters: [...] }`。
+数据按区域拆分为 12 个文件：`data/{区域id}.js`，每个 `module.exports = { id, name, theaters: [...] }`。
 
 ```
 district
