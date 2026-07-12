@@ -1,16 +1,19 @@
 const LOADERS = {
-  toshin:           () => require('../../data/toshin.js'),
+  saitama_city:     () => require('../../data/saitama_city.js'),
+  saitama_west:     () => require('../../data/saitama_west.js'),
+  saitama_south:    () => require('../../data/saitama_south.js'),
+  ikebukuro_north:  () => require('../../data/ikebukuro_north.js'),
+  ueno_joto:        () => require('../../data/ueno_joto.js'),
+  west_tokyo:       () => require('../../data/west_tokyo.js'),
   shinjuku_shibuya: () => require('../../data/shinjuku_shibuya.js'),
-  ikebukuro_kita:   () => require('../../data/ikebukuro_kita.js'),
-  suidobashi:       () => require('../../data/suidobashi.js'),
-  joto:             () => require('../../data/joto.js'),
-  jonan:            () => require('../../data/jonan.js'),
-  nishitokyo:       () => require('../../data/nishitokyo.js'),
-  saitama:          () => require('../../data/saitama.js'),
-  chiba:            () => require('../../data/chiba.js'),
-  kawasaki:         () => require('../../data/kawasaki.js'),
+  city_center:      () => require('../../data/city_center.js'),
+  south_tokyo:      () => require('../../data/south_tokyo.js'),
+  chiba_northwest:  () => require('../../data/chiba_northwest.js'),
+  chiba_bay:        () => require('../../data/chiba_bay.js'),
+  chiba_south:      () => require('../../data/chiba_south.js'),
   yokohama:         () => require('../../data/yokohama.js'),
-  kennishi_shonan:  () => require('../../data/kennishi_shonan.js'),
+  kawasaki:         () => require('../../data/kawasaki.js'),
+  west_shonan:      () => require('../../data/west_shonan.js'),
 }
 
 function ratingColor(score) {
@@ -131,7 +134,7 @@ Page({
         path: `/pages/theater/theater?${q}`,
       }
     }
-    return { title: '东京电影院地图', path: '/pages/index/index' }
+    return { title: '大熊看点映', path: '/pages/index/index' }
   },
 
   // 点击场次：复制该电影在本影院的 eiga.com 场次页链接。

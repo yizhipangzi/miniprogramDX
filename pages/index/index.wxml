@@ -4,7 +4,12 @@
   <image class="splash-img" src="/images/cover.png" mode="aspectFill"/>
 </view>
 
-<!-- 地图高度贴合屏幕、宽度溢出：scroll-x + scroll-y 支持上下左右拖动，热区点击不受影响 -->
+<!-- 顶部悬浮提示：地图露出后显示 5 秒，随后淡出。pointer-events:none 不挡地图点击 -->
+<view wx:if="{{showHint}}" class="map-hint {{hintFade ? 'map-hint-hide' : ''}}">
+  <text class="map-hint-text">点击区域查看排片</text>
+</view>
+
+<!-- 竖版底图宽度铺满屏幕；整图只挂一个 tap，命中判定在 JS 里做多边形检测 -->
 <scroll-view scroll-x scroll-y class="scroll">
   <view class="map-wrap" style="width:{{mapWidth}}px;height:{{mapHeight}}px">
     <image
@@ -12,21 +17,9 @@
       src="/images/tokyo_map.png"
       mode="scaleToFill"
       style="width:{{mapWidth}}px;height:{{mapHeight}}px"
+      bindtap="onMapTap"
     />
-    <view
-      wx:for="{{spots}}"
-      wx:key="id"
-      class="spot"
-      style="{{item.style}}"
-      data-id="{{item.id}}"
-      data-name="{{item.name}}"
-      bindtap="onSpotTap"
-    >
-      <view class="spot-ripple" wx:if="{{item.id === activeSpot}}"/>
-    </view>
-  </view>
-
-  <view class="tip" wx:if="{{mapHeight === 0}}">
-    <text class="tip-text">地图加载中…</text>
+    <!-- 命中区域的高亮闪烁（按多边形 bbox 定位） -->
+    <view wx:if="{{activeStyle}}" class="spot-ripple" style="{{activeStyle}}"/>
   </view>
 </scroll-view>

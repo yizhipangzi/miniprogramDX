@@ -1,22 +1,29 @@
 const LOADERS = {
-  toshin:           () => require('../../data/toshin.js'),
+  saitama_city:     () => require('../../data/saitama_city.js'),
+  saitama_west:     () => require('../../data/saitama_west.js'),
+  saitama_south:    () => require('../../data/saitama_south.js'),
+  ikebukuro_north:  () => require('../../data/ikebukuro_north.js'),
+  ueno_joto:        () => require('../../data/ueno_joto.js'),
+  west_tokyo:       () => require('../../data/west_tokyo.js'),
   shinjuku_shibuya: () => require('../../data/shinjuku_shibuya.js'),
-  ikebukuro_kita:   () => require('../../data/ikebukuro_kita.js'),
-  suidobashi:       () => require('../../data/suidobashi.js'),
-  joto:             () => require('../../data/joto.js'),
-  jonan:            () => require('../../data/jonan.js'),
-  nishitokyo:       () => require('../../data/nishitokyo.js'),
-  saitama:          () => require('../../data/saitama.js'),
-  chiba:            () => require('../../data/chiba.js'),
-  kawasaki:         () => require('../../data/kawasaki.js'),
+  city_center:      () => require('../../data/city_center.js'),
+  south_tokyo:      () => require('../../data/south_tokyo.js'),
+  chiba_northwest:  () => require('../../data/chiba_northwest.js'),
+  chiba_bay:        () => require('../../data/chiba_bay.js'),
+  chiba_south:      () => require('../../data/chiba_south.js'),
   yokohama:         () => require('../../data/yokohama.js'),
-  kennishi_shonan:  () => require('../../data/kennishi_shonan.js'),
+  kawasaki:         () => require('../../data/kawasaki.js'),
+  west_shonan:      () => require('../../data/west_shonan.js'),
 }
 
 // 缓存「免校验」窗口（毫秒）：此窗口内重复打开同一区直接秒开，连版本清单都不查，
 // 省掉快速来回切换时的网络往返。超过这个窗口会去比对云端版本清单(manifest)决定是否重下。
 // 设为 0 则每次打开都校验版本（rerun 覆盖能最快被发现）。按需调整。
 const CACHE_FRESH_WINDOW_MS = 5 * 60 * 1000 // 5 分钟
+
+// 进度条分段：进页面第一帧 20%，json 下载完 90%，渲染完 100% 后隐藏。
+const PROGRESS_START = 20       // 第一帧（页面就绪 / 正在查版本清单）
+const PROGRESS_DOWNLOADED = 90  // 云端 json 下载完成
 
 function ratingColor(score) {
   if (!score) return '#555'
@@ -114,20 +121,23 @@ Page({
     errMsg: '',
     showDetail: false,
     detailMovie: null,
-    // 加载进度条：loading=true 时显示；progress 0~100 跟随云端 json 下载进度，
-    // 下载满 100% 后渲染完成即隐藏（不额外等待）
-    loading: false,
-    progress: 0,
+    // 加载进度条：默认就是 true —— 进页面第一帧直接是进度条(20%)，
+    // 空列表「暂无数据」永远没机会露脸。进度分配：
+    //   20%  第一帧（页面已就绪，正在查版本清单）
+    //   →90% 云端 json 下载中
+    //   →100% setData 渲染完成，随即隐藏（不额外等待）
+    loading: true,
+    progress: PROGRESS_START,
   },
 
   onLoad(options) {
     const { id, name } = options
     if (!id) {
-      this.setData({ errMsg: '缺少地区参数' })
+      this.setData({ errMsg: '缺少地区参数', loading: false })
       return
     }
     if (!LOADERS[id]) {
-      this.setData({ errMsg: `未知地区: ${id}` })
+      this.setData({ errMsg: `未知地区: ${id}`, loading: false })
       return
     }
 
@@ -142,18 +152,19 @@ Page({
     const cachedTs = wx.getStorageSync(tsKey)
     const cachedVer = wx.getStorageSync(verKey)
 
-    // 1) 免校验窗口内的缓存 → 秒开，连版本都不查
+    // 1) 免校验窗口内的缓存 → 秒开（同步 setData，会并进首帧，进度条不会闪一下）
     if (cached && cached.theaters && cachedTs && Date.now() - cachedTs < CACHE_FRESH_WINDOW_MS) {
       this.renderDistrict(cached)
+      this.setData({ loading: false })
       return
     }
 
     // 下整包并渲染（带进度条）；serverVer 为云端最新版本号，成功后随缓存一起记下。
     const downloadFresh = serverVer => {
-      this.setData({ loading: true, progress: 0 })
       return this.loadFromCloud(id, p => {
-        // 下载进度 0~100 直接映射进度条 0~100
-        this.setData({ progress: Math.round(p) })
+        // 下载进度 0~100 映射到进度条 20%~90%
+        const span = PROGRESS_DOWNLOADED - PROGRESS_START
+        this.setData({ progress: PROGRESS_START + Math.round((p / 100) * span) })
       })
         .then(district => {
           wx.setStorageSync(cacheKey, district)
@@ -162,13 +173,13 @@ Page({
           this.renderWithProgress(district)
         })
         .catch(() => {
-          // 云端失败：优先用旧缓存，否则包内本地兜底（直接填满再渲染）
+          // 云端失败：优先用旧缓存，否则包内本地兜底（直接推到 90% 再渲染）
           let fallback = (cached && cached.theaters) ? cached : null
           if (!fallback) {
             try { fallback = LOADERS[id]() } catch (e) {}
           }
           if (fallback) {
-            this.setData({ progress: 100 })
+            this.setData({ progress: PROGRESS_DOWNLOADED })
             this.renderWithProgress(fallback)
           } else {
             this.setData({ loading: false, errMsg: '数据加载失败' })
@@ -176,17 +187,18 @@ Page({
         })
     }
 
-    // 2) 超过窗口：先秒下版本清单(manifest)比对（不显示进度条）
+    // 2) 超过窗口：先秒下版本清单(manifest)比对。此间进度条停在 20%（首帧就在显示）
     this.fetchManifest()
       .then(manifest => {
         const serverVer = manifest && manifest[id]
-        // 版本一致（含 rerun 出相同内容）→ 直接用缓存秒开，刷新时间戳，全程无进度条
+        // 版本一致（含 rerun 出相同内容）→ 直接用缓存渲染，刷新时间戳，收起进度条
         if (cached && cached.theaters && serverVer && serverVer === cachedVer) {
           wx.setStorageSync(tsKey, Date.now())
           this.renderDistrict(cached)
+          this.setData({ loading: false })
           return
         }
-        // 版本变了 / 无缓存 / 清单里没有该区 → 进度条下载整包
+        // 版本变了 / 无缓存 / 清单里没有该区 → 继续走进度条下载整包（20%→90%）
         return downloadFresh(serverVer || '')
       })
       .catch(() => downloadFresh(''))  // 清单都拿不到 → 直接下整包兜底
@@ -316,7 +328,7 @@ Page({
     const { districtId, districtName } = this.data
     const name = districtName || '东京'
     if (!districtId) {
-      return { title: '东京电影院地图', path: '/pages/index/index' }
+      return { title: '大熊看点映', path: '/pages/index/index' }
     }
     return {
       title: `${name} 正在上映的电影 · 东京电影院`,

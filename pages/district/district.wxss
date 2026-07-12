@@ -321,16 +321,6 @@ page {
   opacity: 0.6;
 }
 
-.empty {
-  padding: 120rpx 0;
-  text-align: center;
-}
-
-.empty-text {
-  color: #888;
-  font-size: 28rpx;
-}
-
 /* ===== 电影详情浮层 ===== */
 .detail-mask {
   position: fixed;

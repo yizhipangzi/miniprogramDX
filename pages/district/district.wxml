@@ -1,7 +1,7 @@
 <!-- 详情浮层打开时锁住页面主体滚动，避免在浮层上滑动穿透到背后页面 -->
 <page-meta page-style="{{showDetail ? 'overflow: hidden;' : ''}}" />
 
-<!-- 加载进度条：下载 json(0~50%) + 渲染(50~100%)，加载完成自动隐藏 -->
+<!-- 加载进度条：首帧 20% → 下载 json 到 90% → 渲染完 100% 后自动隐藏 -->
 <view wx:if="{{loading}}" class="loading-mask">
   <view class="loading-box">
     <text class="loading-text">加载中 {{progress}}%</text>
@@ -58,9 +58,6 @@
     <view class="theater-arrow">›</view>
   </view>
 
-  <view class="empty" wx:if="{{theaters.length === 0}}">
-    <text class="empty-text">该地区暂无电影院数据</text>
-  </view>
 </view>
 
 <!-- 电影索引模式 -->
@@ -123,9 +120,6 @@
     </view>
   </view>
 
-  <view class="empty" wx:if="{{movies.length === 0}}">
-    <text class="empty-text">该地区暂无电影数据</text>
-  </view>
 </view>
 
 <!-- 电影详情浮层 -->

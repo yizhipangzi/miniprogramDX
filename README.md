@@ -7,11 +7,11 @@
 ## 一、页面与功能式样
 
 ### 1. 首页 `pages/index`（地图选区）
-- 展示首都圏地图底图 `images/tokyo_map.png`（原图 1536 × 1024，覆盖东京+埼玉+千叶+神奈川）。
-- 图上叠加 12 个**透明热区按钮**，坐标按原图像素定义、随屏幕等比缩放（见 `index.js` 的 `SPOTS`）。
+- 展示首都圏地图底图 `images/tokyo_map.png`（原图 1080 × 1920，覆盖东京+埼玉+千叶+神奈川）。
+- 图上叠加 15 个**透明热区按钮**（多边形），坐标按原图像素定义、随屏幕等比缩放（见 `index.js` 的 `AREAS`）。
 - 点击热区 → 红色高亮动效 → 跳转到对应区域页 `pages/district`。
-- 12 个区域 id（东京7个 + 埼玉/千叶各1个 + 神奈川3个）：
-  `toshin`(都心) / `shinjuku_shibuya`(新宿・渋谷) / `ikebukuro_kita`(池袋・北) / `suidobashi`(水道橋・飯田橋) / `joto`(城東) / `jonan`(城南) / `nishitokyo`(西東京) / `saitama`(埼玉県) / `chiba`(千葉県) / `kawasaki`(川崎) / `yokohama`(横浜) / `kennishi_shonan`(県西・湘南)
+- 15 个区域 id（东京6个 + 埼玉3个 + 千叶3个 + 神奈川3个），1 热区 = 1 区 = 1 份数据，无间接映射：
+  `saitama_city`(さいたま市) / `saitama_west`(県西) / `saitama_south`(県南) / `ikebukuro_north`(池袋・北) / `ueno_joto`(上野・城東) / `west_tokyo`(西東京) / `shinjuku_shibuya`(新宿・渋谷) / `city_center`(都心) / `south_tokyo`(城南) / `chiba_northwest`(北西部) / `chiba_bay`(湾岸) / `chiba_south`(南部) / `yokohama`(横浜) / `kawasaki`(川崎) / `west_shonan`(県西・湘南)
   - id 必须与 `data/{id}.js` 文件名、云存储 `{id}.json`、`pipeline/step4_export.py` 的 `DISTRICTS` 保持一致。
 
 ### 2. 区域页 `pages/district`（双视图）
