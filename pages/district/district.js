@@ -1,20 +1,4 @@
-const LOADERS = {
-  saitama_city:     () => require('../../data/saitama_city.js'),
-  saitama_west:     () => require('../../data/saitama_west.js'),
-  saitama_south:    () => require('../../data/saitama_south.js'),
-  ikebukuro_north:  () => require('../../data/ikebukuro_north.js'),
-  ueno_joto:        () => require('../../data/ueno_joto.js'),
-  west_tokyo:       () => require('../../data/west_tokyo.js'),
-  shinjuku_shibuya: () => require('../../data/shinjuku_shibuya.js'),
-  city_center:      () => require('../../data/city_center.js'),
-  south_tokyo:      () => require('../../data/south_tokyo.js'),
-  chiba_northwest:  () => require('../../data/chiba_northwest.js'),
-  chiba_bay:        () => require('../../data/chiba_bay.js'),
-  chiba_south:      () => require('../../data/chiba_south.js'),
-  yokohama:         () => require('../../data/yokohama.js'),
-  kawasaki:         () => require('../../data/kawasaki.js'),
-  west_shonan:      () => require('../../data/west_shonan.js'),
-}
+const { LOADERS, ratingColor, scoreInfo, genreTags, eigaShowtimeUrl } = require('../../utils/movie.js')
 
 // 缓存「免校验」窗口（毫秒）：此窗口内重复打开同一区直接秒开，连版本清单都不查，
 // 省掉快速来回切换时的网络往返。超过这个窗口会去比对云端版本清单(manifest)决定是否重下。
@@ -24,30 +8,6 @@ const CACHE_FRESH_WINDOW_MS = 5 * 60 * 1000 // 5 分钟
 // 进度条分段：进页面第一帧 20%，json 下载完 90%，渲染完 100% 后隐藏。
 const PROGRESS_START = 20       // 第一帧（页面就绪 / 正在查版本清单）
 const PROGRESS_DOWNLOADED = 90  // 云端 json 下载完成
-
-function ratingColor(score) {
-  if (!score) return '#555'
-  if (score >= 8.0) return '#4ade80'
-  if (score >= 7.0) return '#fbbf24'
-  if (score >= 6.0) return '#f97316'
-  return '#f87171'
-}
-
-function scoreInfo(mv) {
-  if (mv.doubanScore) {
-    return { score: mv.doubanScore, label: '某瓣', display: mv.doubanScore.toFixed(1) }
-  }
-  if (mv.eigaRating) {
-    return { score: mv.eigaRating * 2, label: '映画', display: mv.eigaRating.toFixed(1) }
-  }
-  return { score: 0, label: '', display: '' }
-}
-
-function genreTags(mv) {
-  return mv.genre
-    ? mv.genre.split(/[/／,，]/).map(g => g.trim()).filter(Boolean).slice(0, 3)
-    : []
-}
 
 // Aggregate every movie across all theaters in the district, dedup by movie id.
 function buildMovies(theaters) {
@@ -63,7 +23,11 @@ function buildMovies(theaters) {
           titleCn: mv.titleCn || '',
           scoreLabel: si.label,
           scoreDisplay: si.display,
-          sortScore: si.score,
+          // 排序统一用后端算好的综合推荐度（0-100，融合豆瓣/IMDb/eiga.com 三个
+          // 评分来源，见 pipeline/scoring.py）；老缓存没有该字段时退回本地评分。
+          sortScore: typeof mv.recommendScore === 'number' ? mv.recommendScore
+                   : typeof mv.sortScore === 'number' ? mv.sortScore
+                   : si.score,
           ratingColor: ratingColor(si.score),
           genres: genreTags(mv),
           eigaUrl: `https://eiga.com/movie/${mv.id}/`,
@@ -93,9 +57,7 @@ function buildMovies(theaters) {
           time: st.time,
           movieType: Array.isArray(st.movieType) ? st.movieType : [],
           theaterName: t.name,
-          // 该电影在该影院的场次页：movie-theater/电影id/地区id/区域id/影院id
-          // t.id 已是「地区id/区域id/影院id」格式（如 13/130301/3035）
-          eigaUrl: `https://eiga.com/movie-theater/${mv.id}/${t.id}/`,
+          eigaUrl: eigaShowtimeUrl(mv.id, t.id),
         })
       })
     })

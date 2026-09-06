@@ -9,7 +9,7 @@ const HINT_MS = 5000        // 地图露出后，「点击区域查看排片」�
 const HINT_FADE_MS = 400    // 提示淡出
 
 // 热区：多边形（原图像素坐标）+ 点击后要跳转的数据区 id。
-// id 必须存在于 pages/district/district.js 的 LOADERS 里，否则跳过去会报「未知地区」。
+// id 必须存在于 utils/movie.js 的 LOADERS 里，否则跳过去会报「未知地区」。
 // 1 熱区 = 1 区 = 1 份 step4 输出的 JSON，无需再经 district 字段间接映射。
 const AREAS = [
   // 埼玉県

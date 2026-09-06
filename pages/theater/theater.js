@@ -1,28 +1,4 @@
-const LOADERS = {
-  saitama_city:     () => require('../../data/saitama_city.js'),
-  saitama_west:     () => require('../../data/saitama_west.js'),
-  saitama_south:    () => require('../../data/saitama_south.js'),
-  ikebukuro_north:  () => require('../../data/ikebukuro_north.js'),
-  ueno_joto:        () => require('../../data/ueno_joto.js'),
-  west_tokyo:       () => require('../../data/west_tokyo.js'),
-  shinjuku_shibuya: () => require('../../data/shinjuku_shibuya.js'),
-  city_center:      () => require('../../data/city_center.js'),
-  south_tokyo:      () => require('../../data/south_tokyo.js'),
-  chiba_northwest:  () => require('../../data/chiba_northwest.js'),
-  chiba_bay:        () => require('../../data/chiba_bay.js'),
-  chiba_south:      () => require('../../data/chiba_south.js'),
-  yokohama:         () => require('../../data/yokohama.js'),
-  kawasaki:         () => require('../../data/kawasaki.js'),
-  west_shonan:      () => require('../../data/west_shonan.js'),
-}
-
-function ratingColor(score) {
-  if (!score) return '#555'
-  if (score >= 8.0) return '#4ade80'
-  if (score >= 7.0) return '#fbbf24'
-  if (score >= 6.0) return '#f97316'
-  return '#f87171'
-}
+const { LOADERS, ratingColor, scoreInfo, genreTags, eigaShowtimeUrl } = require('../../utils/movie.js')
 
 function formatDuration(min) {
   if (!min) return ''
@@ -32,32 +8,16 @@ function formatDuration(min) {
 }
 
 function processMovie(mv, index, theaterId) {
-  let score = null
-  let scoreLabel = ''
-  let scoreDisplay = ''
-
-  if (mv.doubanScore) {
-    score = mv.doubanScore
-    scoreLabel = '某瓣'
-    scoreDisplay = mv.doubanScore.toFixed(1)
-  } else if (mv.eigaRating) {
-    score = mv.eigaRating * 2
-    scoreLabel = '映画'
-    scoreDisplay = mv.eigaRating.toFixed(1)
-  }
-
-  const genres = mv.genre
-    ? mv.genre.split(/[/／,，]/).map(g => g.trim()).filter(Boolean).slice(0, 3)
-    : []
+  const si = scoreInfo(mv)
 
   return {
     id: mv.id,
     titleJp: mv.titleJp,
     titleCn: mv.titleCn || '',
-    scoreLabel,
-    scoreDisplay,
-    ratingColor: ratingColor(score),
-    genres,
+    scoreLabel: si.label,
+    scoreDisplay: si.display,
+    ratingColor: ratingColor(si.score),
+    genres: genreTags(mv),
     duration: mv.duration,
     durationText: formatDuration(mv.duration),
     year: mv.year,
@@ -66,8 +26,7 @@ function processMovie(mv, index, theaterId) {
     // 后端 JSON 已是「今天(JST)」的一维场次数组，直接用，不再生成假数据
     showtimes: Array.isArray(mv.showtimes) ? mv.showtimes : [],
     // 该电影在本影院的 eiga.com 场次页（点击场次复制）
-    // theaterId 已是「地区id/区域id/影院id」格式（如 13/130301/3035）
-    eigaUrl: `https://eiga.com/movie-theater/${mv.id}/${theaterId}/`,
+    eigaUrl: eigaShowtimeUrl(mv.id, theaterId),
   }
 }
 
