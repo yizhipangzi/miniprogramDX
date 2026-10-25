@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/district/district",
-    "pages/theater/theater"
+    "pages/theater/theater",
+    "pages/tiff/tiff"
   ],
   "window": {
     "navigationBarTextStyle": "white",

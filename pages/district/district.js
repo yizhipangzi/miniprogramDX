@@ -46,6 +46,10 @@ function buildMovies(theaters) {
             : (mv.doubanComment ? [mv.doubanComment] : []),
           year: mv.year || '',
           country: mv.country || '',
+          // 豆瓣分数变化趋势：step4 只在「真的变化过」时才带这个字段（见
+          // pipeline/step4_export.py 的 doubanScoreTrend），没有就是空数组——
+          // 点评分弹详情时据此决定要不要画趋势图（见 onScoreTap/drawTrend）。
+          scoreTrend: Array.isArray(mv.doubanScoreTrend) ? mv.doubanScoreTrend : [],
           screenings: [],
           expanded: false,
         }
@@ -252,14 +256,97 @@ Page({
     this.setData({ [`movies[${index}].expanded`]: !this.data.movies[index].expanded })
   },
 
-  // 点击评分块：弹出电影详情浮层
+  // 点击评分块：弹出电影详情浮层（含豆瓣分数变化趋势图，如果有）
   onScoreTap(e) {
     const index = e.currentTarget.dataset.index
-    this.setData({ detailMovie: this.data.movies[index], showDetail: true })
+    const movie = this.data.movies[index]
+    this.setData({ detailMovie: movie, showDetail: true }, () => {
+      // canvas 要等 wx:if 对应的节点真正挂载后才能查到，setData 回调之后
+      // 再 nextTick 一次更保险（兼容各端渲染时序）。
+      wx.nextTick(() => this.drawTrend(movie.scoreTrend))
+    })
   },
 
   closeDetail() {
     this.setData({ showDetail: false })
+  },
+
+  // 用 canvas 2d 画一条极简的分数变化折线：首尾分数标注 + 涨跌颜色，
+  // 不追求精细坐标轴——重点是「一眼看出涨了还是跌了、大致走势」。
+  drawTrend(points) {
+    if (!Array.isArray(points) || points.length < 2) return
+    wx.createSelectorQuery().in(this).select('#trendCanvas').fields({ node: true, size: true }).exec(res => {
+      const item = res && res[0]
+      if (!item || !item.node || !item.width || !item.height) return
+      const canvas = item.node
+      const ctx = canvas.getContext('2d')
+      const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2
+      const w = item.width
+      const h = item.height
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      ctx.scale(dpr, dpr)
+      ctx.clearRect(0, 0, w, h)
+
+      const scores = points.map(p => p.score)
+      const min = Math.min(...scores)
+      const max = Math.max(...scores)
+      const span = (max - min) || 1 // 全程持平时避免除零（理论上不会发生——没变化不会有这个字段）
+      const padX = 8
+      const padTop = 22
+      const padBottom = 20
+      const plotW = w - padX * 2
+      const plotH = h - padTop - padBottom
+      const xAt = i => padX + (plotW * i) / (points.length - 1)
+      const yAt = s => padTop + plotH * (1 - (s - min) / span)
+
+      // 基准虚线：首个分数的水平线，衬托后续涨跌
+      ctx.strokeStyle = '#2a2a4a'
+      ctx.lineWidth = 1
+      ctx.setLineDash([4, 4])
+      ctx.beginPath()
+      ctx.moveTo(padX, yAt(scores[0]))
+      ctx.lineTo(w - padX, yAt(scores[0]))
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // 折线：涨=绿 跌=红 平=黄（按首尾比较定色）
+      const last = scores[scores.length - 1]
+      const color = last > scores[0] ? '#4ade80' : last < scores[0] ? '#f87171' : '#fbbf24'
+      ctx.strokeStyle = color
+      ctx.lineWidth = 2.5
+      ctx.beginPath()
+      points.forEach((p, i) => {
+        const x = xAt(i)
+        const y = yAt(p.score)
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      })
+      ctx.stroke()
+
+      // 每个拐点一个小圆点
+      ctx.fillStyle = color
+      points.forEach((p, i) => {
+        ctx.beginPath()
+        ctx.arc(xAt(i), yAt(p.score), 3.5, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      // 首尾日期 + 首尾分数标注（拐点多的时候中间不标，避免挤成一团）
+      ctx.font = '11px sans-serif'
+      ctx.fillStyle = '#888'
+      ctx.textAlign = 'left'
+      ctx.fillText(points[0].date, padX, h - 6)
+      ctx.textAlign = 'right'
+      ctx.fillText(points[points.length - 1].date, w - padX, h - 6)
+
+      ctx.font = '13px sans-serif'
+      ctx.fillStyle = '#e8e8e8'
+      ctx.textAlign = 'left'
+      ctx.fillText(scores[0].toFixed(1), xAt(0), Math.max(yAt(scores[0]) - 10, 12))
+      ctx.textAlign = 'right'
+      ctx.fillText(last.toFixed(1), xAt(points.length - 1), Math.max(yAt(last) - 10, 12))
+    })
   },
 
   // 阻止浮层内部点击穿透到遮罩

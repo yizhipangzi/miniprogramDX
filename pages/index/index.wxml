@@ -9,6 +9,32 @@
   <text class="map-hint-text">点击区域查看排片</text>
 </view>
 
+<!-- TIFF 引导层（当天第一次打开）：灰色遮罩在地图之上、按钮之下；点遮罩关闭 -->
+<view wx:if="{{showGuide}}" class="tiff-guide" catchtap="closeGuide" catchtouchmove="noop">
+  <view class="guide-arrow" style="{{guideArrowStyle}}">
+    <view class="ga-head"></view>
+    <view class="ga-shaft"></view>
+  </view>
+  <view class="guide-text" style="{{guideTextStyle}}">
+    <text class="gt-main">TIFF2026排片</text>
+    <text class="gt-sub">东京国际映画祭 10/26〜11/4 · 点按钮进入</text>
+  </view>
+</view>
+
+<!-- TIFF 悬浮入口：右上角，可拖动（拖动不触发跳转，轻点才进入）。尺寸按屏幕宽度等比放大 -->
+<view
+  wx:if="{{tiffOn && tiffStyle}}"
+  class="tiff-fab {{tiffDragging ? 'tiff-fab-drag' : ''}} {{showGuide ? 'tiff-fab-pulse' : ''}}"
+  style="{{tiffStyle}}"
+  catchtouchstart="onTiffTouchStart"
+  catchtouchmove="onTiffTouchMove"
+  catchtouchend="onTiffTouchEnd"
+  catchtouchcancel="onTiffTouchEnd"
+>
+  <image wx:if="{{!tiffImgErr}}" class="tiff-fab-img" src="{{tiffImg}}" mode="aspectFit" binderror="onTiffImgError"/>
+  <view wx:else class="tiff-fab-fallback"><text>TIFF 2026</text></view>
+</view>
+
 <!-- 竖版底图宽度铺满屏幕；整图只挂一个 tap，命中判定在 JS 里做多边形检测 -->
 <scroll-view scroll-x scroll-y class="scroll">
   <view class="map-wrap" style="width:{{mapWidth}}px;height:{{mapHeight}}px">

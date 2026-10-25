@@ -87,3 +87,121 @@ page {
   45%  { opacity: 1;   transform: scale(1.04); }
   100% { opacity: 0.85; transform: scale(1); }
 }
+
+/* TIFF 悬浮入口（left/top/width/height 由 JS 内联下发）。z-index 低于开屏封面/提示条 */
+.tiff-fab {
+  position: fixed;
+  z-index: 400;
+  border-radius: 14rpx;
+  overflow: hidden;
+  border: 3rpx solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.55), 0 0 18rpx rgba(233, 69, 96, 0.45);
+  background: #000;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 引导中：按钮呼吸光圈，吸引注意 */
+.tiff-fab-pulse {
+  animation: fab-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes fab-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.9), 0 8rpx 28rpx rgba(0, 0, 0, 0.55); }
+  50%      { box-shadow: 0 0 0 16rpx rgba(255, 212, 0, 0), 0 8rpx 28rpx rgba(0, 0, 0, 0.55); }
+}
+
+/* 拖动中：轻微放大 + 更强阴影，提示「已拿起」 */
+.tiff-fab-drag {
+  transform: scale(1.06);
+  box-shadow: 0 14rpx 40rpx rgba(0, 0, 0, 0.7), 0 0 26rpx rgba(233, 69, 96, 0.7);
+  opacity: 0.92;
+}
+
+.tiff-fab-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tiff-fab-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #b4001e, #e94560);
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+/* ── TIFF 引导层（当天第一次打开）：z-index 在地图(默认)之上、按钮(400)之下 ── */
+.tiff-guide {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 390;
+  background: rgba(20, 20, 30, 0.62);
+  animation: guide-in 0.3s ease-out;
+}
+
+@keyframes guide-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 箭头：CSS 画（三角头 + 杆），默认朝上，由 JS 内联 rotate 指向按钮 */
+.guide-arrow {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ga-head {
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 22px solid transparent;
+  border-bottom: 24px solid #ffd400;
+  animation: arrow-nudge 0.9s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 212, 0, 0.8));
+}
+
+.ga-shaft {
+  width: 14px;
+  height: 30px;
+  background: #ffd400;
+  border-radius: 0 0 4px 4px;
+  animation: arrow-nudge 0.9s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(255, 212, 0, 0.7);
+}
+
+/* 沿箭头方向前后轻推（容器已旋转，translateY 负方向 = 指向按钮） */
+@keyframes arrow-nudge {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.guide-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  max-width: 70vw;
+}
+
+.gt-main {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #ffd400;
+  letter-spacing: 2rpx;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.6);
+}
+
+.gt-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #f0f0f5;
+}

@@ -162,6 +162,13 @@
         </block>
       </view>
 
+      <!-- 豆瓣分数变化趋势：只在后端判定「真的变化过」时才有数据（见
+           pipeline/step4_export.py 的 doubanScoreTrend），没变化的电影不显示这块 -->
+      <view class="detail-trend" wx:if="{{detailMovie.scoreTrend.length > 1}}">
+        <text class="dc-label">📈 某瓣分数变化</text>
+        <canvas type="2d" id="trendCanvas" class="trend-canvas"></canvas>
+      </view>
+
       <!-- 信息行 -->
       <view class="detail-row" wx:if="{{detailMovie.director}}">
         <text class="dr-label">👤 导演</text>

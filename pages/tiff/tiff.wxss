@@ -1,0 +1,597 @@
+page {
+  background: #0d0d1a;
+}
+
+.loading {
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-text {
+  color: #aaa;
+  font-size: 26rpx;
+}
+
+.err-banner {
+  padding: 60rpx 32rpx;
+  background: #2a0a10;
+}
+
+.err-text {
+  color: #e94560;
+  font-size: 28rpx;
+}
+
+/* ── 吸顶：日期 tab + 筛选 ── */
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #0d0d1a;
+  border-bottom: 1rpx solid #1e1e3a;
+}
+
+.tabs {
+  white-space: nowrap;
+  padding: 16rpx 12rpx 0;
+  box-sizing: border-box;
+}
+
+.tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 118rpx;
+  padding: 12rpx 0 14rpx;
+  margin: 0 6rpx;
+  border-radius: 12rpx 12rpx 0 0;
+  border-bottom: 6rpx solid transparent;
+}
+
+.tab-week {
+  font-size: 22rpx;
+  color: #888;
+}
+
+.tab-md {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ddd;
+  margin-top: 4rpx;
+}
+
+.tab-weekend .tab-week {
+  color: #e57373;
+}
+
+.tab-on {
+  background: #1c1c33;
+  border-bottom-color: #e94560;
+}
+
+.tab-on .tab-md {
+  color: #fff;
+}
+
+.tab-on .tab-week {
+  color: #e94560;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+}
+
+.chip {
+  font-size: 24rpx;
+  color: #aaa;
+  padding: 8rpx 24rpx;
+  margin-right: 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #2e2e4e;
+}
+
+.chip-on {
+  color: #fff;
+  background: #e94560;
+  border-color: #e94560;
+}
+
+.filter-count {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: #777;
+}
+
+/* ── 作品卡片 ── */
+.list {
+  padding: 16rpx 20rpx 40rpx;
+}
+
+.empty {
+  padding: 120rpx 0;
+  text-align: center;
+  color: #777;
+  font-size: 26rpx;
+}
+
+.card {
+  background: #16162a;
+  border: 1rpx solid #24243f;
+  border-radius: 18rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx;
+}
+
+.thumb {
+  width: 132rpx;
+  height: 184rpx;
+  border-radius: 10rpx;
+  flex-shrink: 0;
+  background: #0d0d1a;
+}
+
+.head-info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.cat {
+  font-size: 19rpx;
+  color: #fff;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.premiere {
+  font-size: 19rpx;
+  color: #f5c542;
+  padding: 1rpx 10rpx;
+  border-radius: 6rpx;
+  border: 1rpx solid rgba(245, 197, 66, 0.6);
+}
+
+.title-jp {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1.35;
+}
+
+.title-cn {
+  display: block;
+  font-size: 24rpx;
+  color: #aaa;
+  margin-top: 4rpx;
+}
+
+.meta-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 10rpx;
+}
+
+.score {
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.score-src {
+  font-size: 18rpx;
+  color: #888;
+  font-weight: 400;
+  margin-left: 4rpx;
+}
+
+.meta {
+  font-size: 22rpx;
+  color: #888;
+}
+
+.chev {
+  color: #555;
+  font-size: 40rpx;
+  margin-left: 8rpx;
+  line-height: 1;
+}
+
+/* 场次格子：3 列 */
+.shows {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 14rpx 18rpx;
+}
+
+.show {
+  box-sizing: border-box;
+  width: calc((100% - 36rpx) / 3);
+  margin: 6rpx;
+  padding: 12rpx 10rpx;
+  border-radius: 10rpx;
+  background: #1e1e36;
+  border: 1rpx solid #2c2c4c;
+  display: flex;
+  flex-direction: column;
+}
+
+.show-buy {
+  border-color: rgba(233, 69, 96, 0.55);
+}
+
+.show-buy:active {
+  background: #2a1a2e;
+}
+
+.show-time {
+  display: flex;
+  align-items: baseline;
+}
+
+.show-start {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1rpx;
+}
+
+.show-end {
+  font-size: 20rpx;
+  color: #999;
+  margin-left: 4rpx;
+}
+
+.show-venue {
+  font-size: 19rpx;
+  color: #aaa;
+  line-height: 1.35;
+  margin-top: 6rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.show-status {
+  align-self: flex-start;
+  font-size: 19rpx;
+  padding: 1rpx 10rpx;
+  margin-top: 8rpx;
+  border-radius: 6rpx;
+  white-space: nowrap;
+}
+
+.st-buy {
+  color: #fff;
+  background: #e94560;
+}
+
+.st-free {
+  color: #4ade80;
+  border: 1rpx solid rgba(74, 222, 128, 0.6);
+}
+
+.st-none {
+  color: #888;
+  border: 1rpx solid #444;
+}
+
+.foot {
+  text-align: center;
+  color: #555;
+  font-size: 20rpx;
+  padding: 20rpx 0;
+}
+
+/* ── 详情浮层（与 district 页一致的基础样式） ── */
+.detail-still {
+  width: 100%;
+  height: 340rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  background: #0d0d1a;
+}
+
+.detail-title-en {
+  display: block;
+  font-size: 22rpx;
+  color: #888;
+  margin-top: 6rpx;
+  font-style: italic;
+}
+
+.detail-block {
+  margin-top: 32rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #252545;
+}
+
+.dshow {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #1f1f3a;
+}
+
+.dshow-date {
+  width: 140rpx;
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: #ddd;
+}
+
+.dshow-time {
+  width: 170rpx;
+  flex-shrink: 0;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dshow-venue {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 22rpx;
+  color: #bbb;
+  line-height: 1.4;
+}
+
+.dshow-sub {
+  font-size: 19rpx;
+  color: #777;
+}
+
+.dshow .show-status {
+  margin: 0 0 0 10rpx;
+  align-self: center;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 32rpx;
+}
+
+.link-btn {
+  font-size: 24rpx;
+  color: #ddd;
+  padding: 10rpx 26rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #3a3a5c;
+}
+
+.copyright {
+  display: block;
+  margin-top: 24rpx;
+  font-size: 18rpx;
+  color: #555;
+}
+
+.detail-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  z-index: 100;
+}
+
+.mask-show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.detail-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 86vw;
+  height: 82vh;
+  background: #16162a;
+  border-radius: 24rpx;
+  border: 1rpx solid #2a2a4a;
+  box-shadow: 0 12rpx 60rpx rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.detail-close {
+  position: absolute;
+  top: 16rpx;
+  right: 20rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #aaa;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.detail-scroll {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.detail-inner {
+  padding: 40rpx 36rpx;
+  box-sizing: border-box;
+}
+
+.detail-top {
+  display: flex;
+  align-items: flex-start;
+}
+
+.detail-poster {
+  width: 220rpx;
+  height: 300rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  background: #0d0d1a;
+}
+
+.poster-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poster-ph-text {
+  font-size: 72rpx;
+  opacity: 0.4;
+}
+
+.detail-headinfo {
+  flex: 1;
+  margin-left: 24rpx;
+  min-width: 0;
+  padding-right: 40rpx;
+}
+
+.detail-title-jp {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1.35;
+}
+
+.detail-title-cn {
+  display: block;
+  font-size: 26rpx;
+  color: #aaa;
+  margin-top: 8rpx;
+  line-height: 1.3;
+}
+
+.detail-yearcountry {
+  display: block;
+  font-size: 24rpx;
+  color: #777;
+  margin-top: 12rpx;
+}
+
+.detail-scoreline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 28rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #252545;
+}
+
+.ds-star {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.ds-source {
+  font-size: 22rpx;
+  color: #888;
+}
+
+.ds-sep {
+  color: #444;
+  font-size: 24rpx;
+}
+
+.ds-meta {
+  font-size: 24rpx;
+  color: #aaa;
+}
+
+.detail-trend {
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #252545;
+}
+
+.trend-canvas {
+  width: 100%;
+  height: 220rpx;
+  margin-top: 8rpx;
+}
+
+.detail-row {
+  display: flex;
+  margin-top: 24rpx;
+}
+
+.dr-label {
+  flex-shrink: 0;
+  width: 140rpx;
+  font-size: 26rpx;
+  color: #888;
+}
+
+.dr-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #e8e8e8;
+  line-height: 1.5;
+}
+
+.detail-comment {
+  margin-top: 32rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #252545;
+}
+
+.dc-label {
+  display: block;
+  font-size: 26rpx;
+  color: #888;
+  margin-bottom: 12rpx;
+}
+
+.dc-item {
+  margin-top: 16rpx;
+  padding-left: 16rpx;
+  border-left: 3rpx solid #3a3a5c;
+}
+
+.dc-item:first-child {
+  margin-top: 0;
+}
+
+.dc-text {
+  display: block;
+  font-size: 26rpx;
+  color: #ccc;
+  line-height: 1.6;
+}

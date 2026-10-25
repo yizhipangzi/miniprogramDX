@@ -1,0 +1,159 @@
+<!-- 東京国際映画祭 排片：顶部日期 tab（吸顶）+ 当天作品卡片（场次格子） -->
+<view wx:if="{{loading}}" class="loading">
+  <text class="loading-text">加载 TIFF 排片中…</text>
+</view>
+
+<view wx:elif="{{errMsg}}" class="err-banner">
+  <text class="err-text">{{errMsg}}</text>
+</view>
+
+<block wx:else>
+  <!-- 吸顶：日期 tab + 筛选 -->
+  <view class="sticky">
+    <scroll-view scroll-x class="tabs" scroll-into-view="tab-{{curDate}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="date"
+        id="tab-{{item.date}}"
+        class="tab {{item.date === curDate ? 'tab-on' : ''}} {{item.weekend ? 'tab-weekend' : ''}}"
+        data-date="{{item.date}}"
+        bindtap="onTabTap"
+      >
+        <text class="tab-week">{{item.isToday ? '今天' : item.week}}</text>
+        <text class="tab-md">{{item.md}}</text>
+      </view>
+    </scroll-view>
+
+    <view class="filter-bar">
+      <view class="chip {{filter === 'all' ? 'chip-on' : ''}}" data-f="all" bindtap="onFilterTap">全部</view>
+      <view class="chip {{filter === 'film' ? 'chip-on' : ''}}" data-f="film" bindtap="onFilterTap">电影</view>
+      <view class="chip {{filter === 'event' ? 'chip-on' : ''}}" data-f="event" bindtap="onFilterTap">活动·讲座</view>
+      <text class="filter-count">{{dayCount}} 部</text>
+    </view>
+  </view>
+
+  <view class="list">
+    <view wx:if="{{!dayList.length}}" class="empty">当天没有符合条件的场次</view>
+
+    <view wx:for="{{dayList}}" wx:for-item="c" wx:for-index="ci" wx:key="code" class="card">
+      <!-- 作品头：点开详情 -->
+      <view class="card-head" data-idx="{{c.idx}}" bindtap="onCardTap">
+        <image class="thumb" src="{{c.thumb}}" mode="aspectFill" lazy-load data-card="{{ci}}" binderror="onThumbError"/>
+        <view class="head-info">
+          <view class="badges">
+            <text class="cat" style="background:{{c.catColor}}">{{c.category}}</text>
+            <text class="premiere" wx:if="{{c.premiere}}">{{c.premiere}}</text>
+          </view>
+          <text class="title-jp">{{c.titleJp}}</text>
+          <text class="title-cn" wx:if="{{c.titleCn}}">{{c.titleCn}}</text>
+          <view class="meta-row">
+            <text class="score" wx:if="{{c.scoreDisplay}}" style="color:{{c.ratingColor}}">⭐{{c.scoreDisplay}}<text class="score-src">{{c.scoreLabel}}</text></text>
+            <text class="meta">{{c.meta}}</text>
+          </view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+
+      <!-- 场次格子（smart-theater 风格：开场大字 / 结束小字 / 会场 / 状态） -->
+      <view class="shows">
+        <view
+          wx:for="{{c.shows}}"
+          wx:for-item="s"
+          wx:for-index="si"
+          wx:key="index"
+          class="show {{s.ticketUrl ? 'show-buy' : ''}}"
+          data-card="{{ci}}"
+          data-show="{{si}}"
+          bindtap="onShowTap"
+        >
+          <view class="show-time">
+            <text class="show-start">{{s.start || '时间待定'}}</text>
+            <text class="show-end" wx:if="{{s.end}}">～{{s.end}}</text>
+          </view>
+          <text class="show-venue">{{s.venue || s.theater || s.area || '会场待定'}}</text>
+          <text class="show-status {{s.statusCls}}" wx:if="{{s.statusText}}">{{s.statusText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="foot">数据来源：東京国際映画祭官网 · 点场次复制购票链接</view>
+  </view>
+</block>
+
+<!-- 作品详情浮层 -->
+<view class="detail-mask {{showDetail ? 'mask-show' : ''}}" catchtap="closeDetail" catchtouchmove="noop">
+  <view class="detail-card" catchtap="noop" wx:if="{{detail}}">
+    <view class="detail-close" catchtap="closeDetail">✕</view>
+    <scroll-view scroll-y class="detail-scroll">
+      <view class="detail-inner">
+        <image class="detail-still" src="{{detail.image}}" mode="aspectFill"/>
+
+        <view class="badges">
+          <text class="cat" style="background:{{detail.catColor}}">{{detail.category}}</text>
+          <text class="premiere" wx:if="{{detail.premiere}}">{{detail.premiere}}</text>
+        </view>
+        <text class="detail-title-jp">{{detail.titleJp}}</text>
+        <text class="detail-title-cn" wx:if="{{detail.titleCn}}">{{detail.titleCn}}</text>
+        <text class="detail-title-en" wx:if="{{detail.titleEn && detail.titleEn !== detail.titleJp}}">{{detail.titleEn}}</text>
+        <text class="detail-yearcountry" wx:if="{{detail.meta}}">{{detail.meta}}{{detail.language ? ' · ' + detail.language : ''}}</text>
+
+        <view class="detail-scoreline" wx:if="{{detail.scoreDisplay}}">
+          <text class="ds-star" style="color:{{detail.ratingColor}}">⭐ {{detail.scoreDisplay}}</text>
+          <text class="ds-source">{{detail.scoreLabel}}</text>
+          <block wx:if="{{detail.doubanScore && (detail.doubanWatched || detail.doubanWish)}}">
+            <text class="ds-sep">/</text>
+            <text class="ds-meta" wx:if="{{detail.doubanWatched}}">{{detail.doubanWatched}} 看过</text>
+            <text class="ds-meta" wx:if="{{detail.doubanWish}}">{{detail.doubanWish}} 想看</text>
+          </block>
+        </view>
+
+        <view class="detail-row" wx:if="{{detail.director}}">
+          <text class="dr-label">👤 导演</text>
+          <text class="dr-value">{{detail.director}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{detail.cast}}">
+          <text class="dr-label">🎭 主演</text>
+          <text class="dr-value">{{detail.cast}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{detail.genre}}">
+          <text class="dr-label">🏷️ 类型</text>
+          <text class="dr-value">{{detail.genre}}</text>
+        </view>
+
+        <view class="detail-block" wx:if="{{detail.synopsis}}">
+          <text class="dc-label">📖 简介</text>
+          <text class="dc-text">{{detail.synopsis}}</text>
+        </view>
+
+        <view class="detail-block">
+          <text class="dc-label">🎟️ 全部场次（点击复制购票链接）</text>
+          <view wx:for="{{detail.shows}}" wx:key="index" class="dshow" data-i="{{index}}" bindtap="onDetailShowTap">
+            <text class="dshow-date">{{item.md}} {{item.week}}</text>
+            <text class="dshow-time">{{item.start}}{{item.end ? '～' + item.end : ''}}</text>
+            <view class="dshow-venue">
+              <text>{{item.venue || item.theater || '会场待定'}}</text>
+              <text class="dshow-sub" wx:if="{{item.subtitle}}">{{item.subtitle}}</text>
+              <text class="dshow-sub" wx:if="{{item.price}}">{{item.price}}</text>
+            </view>
+            <text class="show-status {{item.statusCls}}" wx:if="{{item.statusText}}">{{item.statusText}}</text>
+          </view>
+          <text class="dc-text" wx:if="{{!detail.shows.length}}">暂无场次信息</text>
+        </view>
+
+        <view class="detail-block" wx:if="{{detail.comments.length}}">
+          <text class="dc-label">📰 某瓣短评</text>
+          <view class="dc-item" wx:for="{{detail.comments}}" wx:key="index">
+            <text class="dc-text">{{item}}</text>
+          </view>
+        </view>
+
+        <view class="links">
+          <view class="link-btn" bindtap="onCopyTiff">TIFF 作品页</view>
+          <view class="link-btn" wx:if="{{detail.trailer}}" bindtap="onCopyTrailer">预告片</view>
+          <view class="link-btn" wx:if="{{detail.doubanId}}" bindtap="onCopyDouban">某瓣</view>
+        </view>
+        <text class="copyright" wx:if="{{detail.copyright}}">{{detail.copyright}}</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

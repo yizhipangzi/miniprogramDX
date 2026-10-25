@@ -469,6 +469,18 @@ page {
   color: #aaa;
 }
 
+.detail-trend {
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #252545;
+}
+
+.trend-canvas {
+  width: 100%;
+  height: 220rpx;
+  margin-top: 8rpx;
+}
+
 .detail-row {
   display: flex;
   margin-top: 24rpx;
