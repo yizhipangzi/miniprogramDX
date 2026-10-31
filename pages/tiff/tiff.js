@@ -151,12 +151,9 @@ Page({
     this._p = p
     const tabs = p.dates.map(dateTab)
     const today = todayJst()
-    // 默认选中「数据日期」（后端生成 tiff.json 时的 JST 日期 dataDate；老数据没有该字段时
-    // 退回 generatedAt 的日期，再退回手机当天）。数据日期不在会期内（会期前生成）→ 选它之后
-    // 最近的一天；都没有 → 最后一天。
-    const dataDate = data.dataDate || (data.generatedAt || '').slice(0, 10) || today
-    const cur = p.dates.indexOf(dataDate) >= 0 ? dataDate
-      : (p.dates.find(d => d >= dataDate) || p.dates[p.dates.length - 1] || '')
+    // 默认选中今天（JST）。今天不在会期内：会期前 → 选之后最近的一天；会期后 → 最后一天。
+    const cur = p.dates.indexOf(today) >= 0 ? today
+      : (p.dates.find(d => d >= today) || p.dates[p.dates.length - 1] || '')
     tabs.forEach(t => { t.isToday = t.date === today })
     this.setData({
       loading: false,
